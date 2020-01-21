@@ -15,7 +15,7 @@ from matplotlib import figure
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-response = get('https://seattle.craigslist.org/search/apa?availabilityMode=0&hasPic=1')
+response = get('https://bend.craigslist.org/search/apa?availabilityMode=0&hasPic=1')
 soup = BeautifulSoup(response.text, 'html.parser')
 
 # This class 'search-legend' encompasses the entire legend bar of a craigslist postings page.
@@ -42,7 +42,7 @@ post_prices = []
 for page in pages:
 
     # Get a request from the page.
-    response = get('https://seattle.craigslist.org/search/apa?'
+    response = get('https://bend.craigslist.org/search/apa?'
                    + 's='
                      + str(page)
                    + '&hasPic=1'
@@ -65,7 +65,7 @@ for page in pages:
 
         # Since we are trying to find the difference of pricing in neighborhoods if the post doesn't list a
         # neighborhood then we don't want to add its data at all.
-        if post.find('span', class_ = 'result-hood') is not None:
+        if post.find('span', class_='result-hood') is not None:
 
             # Extract post date
             date = post.find('time', class_='result-date')['datetime']
@@ -186,25 +186,24 @@ apts['neighborhood'] = apts['neighborhood'].apply(lambda x: x.split(',')[0])
 # remove whitespaces
 apts['neighborhood'] = apts['neighborhood'].apply(lambda x: x.strip())
 
+# Group by neighborhood.
+print(apts.groupby('neighborhood').mean()['price'].sort_values())
+
 # Save data to a csv file
-apts.to_csv('apts_Seattle_Jan_17_2020.csv', index=False)
+apts.to_csv('apts_Seattle_Jan_19_2020.csv', index=False)
 
-# Look at a standard histogram of the average price of our apt data
-
-plt.figure(figsize=(10, 6))
-plt.hist(apts['price'], edgecolor='black')
-plt.xlabel('Price')
-plt.ylabel('Count')
-plt.title('Distribution of Prices')
-plt.show()
-
-# Start creating visualizations with matplotlib
+plt.figure(figsize=(15, 10))
 params = {'legend.fontsize': 'x-large',
           'figure.figsize': (15, 5),
-          'axes.labelsize': 'x-large',
-          'axes.titlesize': 'x-large',
-          'xtick.labelsize': 'x-large',
-          'ytick.labelsize': 'x-large'}
+         'axes.labelsize': 'x-large',
+         'axes.titlesize':'x-large',
+         'xtick.labelsize':'x-large',
+         'ytick.labelsize':'x-large'}
 
 pylab.rcParams.update(params)
-
+sns.boxplot(x='neighborhood', y='price', data=apts)
+plt.xlabel("Neighborhood")
+plt.xticks(rotation=75)
+plt.ylabel('Price USD')
+plt.title('Prices by Neighborhood - Boxplots')
+plt.show()
